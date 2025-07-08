@@ -1,0 +1,20 @@
+# Environments
+*.env
+.venv
+env/
+*.venv/
+pyenv.cfg
+
+# VSCode
+.vscode/
+
+# Testing Data
+voter_data/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+.DS_Store

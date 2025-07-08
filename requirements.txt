@@ -1,0 +1,8 @@
+sqlalchemy
+pdfplumber
+python-docx
+apache-airflow
+pandas
+google-cloud-orchestration-airflow
+google-cloud-bigquery
+google-cloud-storage
