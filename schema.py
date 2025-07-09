@@ -109,8 +109,8 @@ def create_voting_history_table(table_id):
     table.set_foreign_key(foreign_key)
 
     table.time_partitioning = bigquery.TimePartitioning(
-    type_=bigquery.TimePartitioningType.DATE,
-    field="election_date"
+        type_=bigquery.TimePartitioningType.DATE,
+        field="election_date"
     )
 
     client = bigquery.Client('PROJECT_ID')

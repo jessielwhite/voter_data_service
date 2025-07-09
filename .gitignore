@@ -17,4 +17,4 @@ build/
 develop-eggs/
 dist/
 downloads/
-.DS_Store
+*.DS_Store
