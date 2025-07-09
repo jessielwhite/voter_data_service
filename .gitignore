@@ -3,7 +3,7 @@
 .venv
 env/
 *.venv/
-pyenv.cfg
+*pyenv.cfg
 
 # VSCode
 .vscode/
