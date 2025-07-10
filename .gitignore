@@ -8,9 +8,6 @@ env/
 # VSCode
 .vscode/
 
-# Testing Data
-voter_data/
-
 # Distribution / packaging
 .Python
 build/

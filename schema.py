@@ -15,8 +15,7 @@ class Table(bigquery.Table):
 
 def create_voter_registry_table(table_id):
     """
-    Establishes the schema for the 'ohio_voter_registry' table, with a new 'voting_history' field for election history variables.
-    Partitioned by voter registration_date and clustered by PII fields.
+    Establishes the schema for voter_registry table.
     """
     schema = [
         bigquery.SchemaField("sos_voter_id", "INTEGER", mode="REQUIRED", description="Secretary of State unique voter ID (Primary Key)"),
@@ -86,7 +85,12 @@ def create_voter_registry_table(table_id):
     client = bigquery.Client('PROJECT_ID')
     table = client.create_table(table)
 
+table_id = "TABLE_ID"
+
+create_voter_registry_table(table_id)
+
 def create_voting_history_table(table_id):
+    """Establishes the schema for voting_history table."""
     schema = [
         bigquery.SchemaField(
             "sos_voter_id",
@@ -116,6 +120,8 @@ def create_voting_history_table(table_id):
     client = bigquery.Client('PROJECT_ID')
     table = client.create_table(table)
 
+table_id = "TABLE_ID"
+create_voting_history_table(table_id)
 
 def hash_columns_for_search(fields_to_hash):
     """
@@ -125,11 +131,13 @@ def hash_columns_for_search(fields_to_hash):
     fields_to_hash = []
     search_exprs = []
     for field in fields_to_hash:
-        # BigQuery SHA256 returns BYTES, so use TO_HEX to get a string representation
         search_exprs.append(f"TO_HEX(SHA256(CAST({field} AS STRING)))")
     return ", ".join(search_exprs)
 
 fields_to_hash = ["residential_zip", "party_affiliation"]
+
+hash_columns_for_search(fields_to_hash)
+
 
 
 

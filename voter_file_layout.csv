@@ -1,0 +1,67 @@
+Field Name,Width,Description
+SOS Voter Id,13,"The Secretary of State centralized systems generated unique number, assigned to each voter registration record."
+County Number,2,Number that identifies each of Ohios 88 Counties (01-88).
+County Id,50,"Countys system generated, unique number assigned to each voter registration record."
+Last Name,50,Voters last name.
+First Name,50,Voters first name.
+Middle Name,50,Voters middle name.
+Suffix,10,Voters name suffix.
+Date Of Birth,10,Voters Date of Birth in YYYY-MM-DD format.
+Registration Date,10,Date voter registered in YYYY-MM-DD format.
+Voter Status,10,Shows current Voter Status
+Party Affiliation,1,"The voters party affiliation as recorded from their last Primary Election history. 
+Values are:
+C - Constitution Party
+D - Democrat Party
+E - Reform Party
+G - Green Party
+L - Libertarian Party
+N - Natural Law Party
+R - Republican Party
+S - Socialist Party"
+Residential Address1,100,Voters street address.
+Residential Address 2,100,
+Residential City,50,
+Residential State,20,
+Residential Zip,5,
+Residential Zip Plus 4,4,
+Residential Country,50,
+Residential Postal Code,10,
+Mailing Address1,100,Voters mailing address.
+Mailing Address 2,10,
+Mailing City,50,
+Mailing State,20,
+Mailing Zip,5,
+Mailing Zip Plus 4,4,
+Mailing Country,50,
+Mailing Postal Code,10,
+Career Center,80,Name of Career Center
+City,80,Name of  City
+City School District,80,Name of  City School District
+County Court  District,80,Name of  County Court
+Congressional District,2,Congressional District identifier
+Court of Appeals,2,Court of Appeals identifier
+Education Service Center,80,Name of  Education Service Center
+Exempted Village School District,80,Name  of  Exempt School District
+Library District,80,Name of Library District
+Local School District,80,Name of  Local School District
+Municipal Court District,80,Name of  Municipal Court District
+Precinct,80,Name of Precinct
+Precinct Code,20,Code assigned to the Precinct
+State Board of Education,2,State Board of Education identifier
+State Representative District,2,House District identifier
+State Senate District,2,State Senate District identifier
+Township,20,Name of Township
+Village,20,Name of Village
+Ward,20,Name of Ward
+Variable filed name with election type and date of each election. Value for this field indicates how the voter voted in that election.,50,"Values are:
+C - Constitution Party
+D - Democrat Party
+E - Reform Party
+G - Green Party
+L - Libertarian Party
+N - Natural Law Party
+R - Republican Party
+S - Socialist Party 
+X - Voted without declaring party affiliation
+Blank - Indicates that there is no voting record for this voter for this election"

@@ -1,6 +1,6 @@
 from docx import Document
 import csv
-import json
+import pandas as pd
 import re
 import os
 from google.cloud import storage
@@ -23,16 +23,16 @@ def download_blob(bucket_name, source_voter_file_layout, destination_voter_file_
     bucket = storage_client.bucket(bucket_name)
 
     blob = bucket.blob(source_voter_file_layout)
-    blob.download_to_filename(destination_voter_file_layout)
+    voter_file = blob.download_to_filename(destination_voter_file_layout)
 
-    print("Downloaded storage object {} from bucket {} to local file {}.".format(source_voter_file_layout, bucket_name, destination_voter_file_layout))
+    print("Downloaded storage object {} from bucket {} to local file {}.".format(source_voter_file_layout, bucket_name, voter_file))
+
+bucket_name = "BUCKET_NAME"
+download_blob(bucket_name, source_voter_file_layout=f"{bucket_name}/data/Voter_File_Layout.docx", destination_voter_file_layout="Voter_File_Layout.docx")
 
 def voter_file_layout_docx_to_csv(docx_layout, csv_layout):
     """
-    Extracts all text from the first table in a DOCX file,
-    removes all non-printing characters from each cell,
-    and writes each row as a row in a CSV file.
-    Handles missing file errors gracefully.
+    Extracts text from the docx file table, removes unnecessary characters, and writes each row as a row in a CSV file.
     """
     if not os.path.isfile(docx_layout):
         print(f"Error: DOCX file not found at '{docx_layout}'")
@@ -59,10 +59,12 @@ def voter_file_layout_docx_to_csv(docx_layout, csv_layout):
             writer.writerow(cleaned_row)
     return True
 
+voter_file_layout_docx_to_csv("Voter_File_Layout.docx", "voter_file_layout.csv")
+
 
 def voter_data_txt_to_csv(txt_voter_data, csv_voter_data, delimiter=None):
     """
-    Converts a delimited text file to CSV format.
+    Converts a delimited txt file containing county-speciifc voter data to CSV format.
     If delimiter is None, will attempt to auto-detect (comma, tab, or pipe).
     """
     # Try to auto-detect delimiter if not provided
@@ -83,29 +85,25 @@ def voter_data_txt_to_csv(txt_voter_data, csv_voter_data, delimiter=None):
         for row in reader:
             writer.writerow(row)
 
-# txt_to_csv('voter_data.txt', 'voter_data.csv')
+voter_data_txt_to_csv('voter_data.txt', 'voter_data.csv')
 
-def process_voter_data(filename):
-    with open(filename, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+def process_voter_data_csv(csv_filename):
+    """
+    Concatenates all values for cols beginning with "PRIMARY"/"GENERAL"/"SPECIAL" into a single val for new col VOTING_HISTORY.
+    For schema normalization testing purposes."
+    """
+    data = pd.read_csv(csv_filename)
 
-    for record in data:
-        voting_history = []
-        keys_to_remove = []
-        for key in list(record.keys()):
-            if key.startswith(('PRIMARY', 'GENERAL', 'SPECIAL')):
-                value = record[key]
-                if value:
-                    voting_history.append(f"{key}:{value}")
-                keys_to_remove.append(key)
-        # Concatenate values and assign to new key
-        record['VOTING_HISTORY'] = ';'.join(voting_history)
-        # Remove the old keys
-        for key in keys_to_remove:
-            del record[key]
+    cols_to_combine = [col for col in data.columns if col.startswith(('PRIMARY', 'GENERAL', 'SPECIAL'))]
 
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2)
+    def concat_history(row):
+        return ';'.join([f"{col}:{row[col]}" for col in cols_to_combine if pd.notnull(row[col]) and row[col] != ''])
+
+    data['VOTING_HISTORY'] = data.apply(concat_history, axis=1)
+
+    data = data.drop(columns=cols_to_combine)
+
+    data.to_csv(csv_filename, index=False)
     return data
 
-# process_voter_data('noble_county_voter_data.json')
+process_voter_data_csv('voter_data.csv')

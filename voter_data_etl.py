@@ -5,53 +5,50 @@ from google.cloud import storage
 from datetime import datetime
 import pandas as pd
 
-base_uri = ObjectStoragePath("STORAGE_BUCKET_URI")
+base_uri = ObjectStoragePath("BUCKET_URI")
 
 default_args = {
-    'start_date': datetime(2025, 7, 5),
-    'retries': 1,
+    "start_date": datetime(2025, 7, 5),
+    "retries": 1,
 }
 
 with DAG(
-    dag_id='voter_data_etl',
+    dag_id="voter_data_etl",
     default_args=default_args,
     schedule_interval=None,
     catchup=False,
-    description='ETL pipeline voter data to BigQuery',
+    description="ETL pipeline voter data to BigQuery",
 ) as dag:
 
     def clean_csv_for_bigquery(src_path, cleaned_path, **kwargs):
         """
         Cleans the CSV file for BigQuery insertion.
-        - Removes problematic characters
-        - Ensures all columns are present
-        - Converts empty strings to None
         """
         df = pd.read_csv(src_path)
-        # Example cleaning: strip whitespace from headers and values
+        # Strip whitespace from headers and values
         df.columns = [col.strip() for col in df.columns]
         df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
         df = df.where(pd.notnull(df), None)
         df.to_csv(cleaned_path, index=False)
 
     clean_task = PythonOperator(
-        task_id='clean_csv',
+        task_id="clean_csv",
         python_callable=clean_csv_for_bigquery,
         op_kwargs={
-            'src_path': 'voter_data.csv',
-            'cleaned_path': '/tmp/cleaned_data.csv'
+            "src_path": "voter_data.csv",
+            "cleaned_path": "/tmp/cleaned_data.csv"
         }
     )
 
     upload_to_gcs = LocalFilesystemToGCSOperator(
-        task_id='upload_to_gcs',
-        src='/tmp/cleaned_data.csv',
-        dst='etl/cleaned_data.csv',
-        bucket='BUCKET_NAME'
+        task_id="upload_to_gcs",
+        src="/tmp/cleaned_data.csv",
+        dst="etl/cleaned_data.csv",
+        bucket="BUCKET_NAME"
     )
 
     bq_load = BigQueryInsertJobOperator(
-        task_id='load_to_bigquery',
+        task_id="load_to_bigquery",
         configuration={
             "load": {
                 "sourceUris": [
@@ -71,7 +68,7 @@ with DAG(
         location="US"
     )
 
-    # Upload the CSV file to a GCS bucket
+# Upload the CSV file to GCS bucket
 def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
@@ -79,14 +76,12 @@ def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
 
     blob.upload_from_filename(source_file_name)
 
-    print(f'File {source_file_name} uploaded to {destination_blob_name} in {bucket_name}.')
+    print(f"File {source_file_name} uploaded to {destination_blob_name} in {bucket_name}.")
 
-# Set your GCS bucket name and destination file name
-bucket_name = 'BUCKET_NAME'
-source_file_name = 'voter_data.csv'
-destination_name = 'voter_data.csv'
+bucket_name = "BUCKET_NAME"
+source_file_name = "voter_data.csv"
+destination_name = "voter_data.csv"
 
-# Upload the CSV file to GCS
 upload_to_gcs(bucket_name, source_file_name, destination_name)
 
 clean_task >> upload_to_gcs
