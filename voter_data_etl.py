@@ -4,8 +4,16 @@ from google.cloud import BigQueryInsertJobOperator
 from google.cloud import storage
 from datetime import datetime
 import pandas as pd
+from dotenv import load_dotenv
+import os
 
-base_uri = ObjectStoragePath("BUCKET_URI")
+load_dotenv()
+
+base_uri = ObjectStoragePath(os.get("BUCKET_URI"))
+bucket_name = os.get("BUCKET_NAME")
+project_id = os.get("PROJECT_ID")
+dataset_id = os.get("DATASET_ID")
+table_id = os.get("TABLE_ID")
 
 default_args = {
     "start_date": datetime(2025, 7, 5),
@@ -44,7 +52,7 @@ with DAG(
         task_id="upload_to_gcs",
         src="/tmp/cleaned_data.csv",
         dst="etl/cleaned_data.csv",
-        bucket="BUCKET_NAME"
+        bucket=bucket_name
     )
 
     bq_load = BigQueryInsertJobOperator(
@@ -55,9 +63,9 @@ with DAG(
                     f"{base_uri}/path/to/data"
                 ],
                 "destinationTable": {
-                    "projectId": "PROJECT_ID",
-                    "datasetId": "DATASET_ID",
-                    "tableId": "TABLE_ID"
+                    "projectId": f"{project_id}",
+                    "datasetId": f"{dataset_id}",
+                    "tableId": f"{table_id}"
                 },
                 "sourceFormat": "CSV",
                 "skipLeadingRows": 1,
@@ -78,7 +86,6 @@ def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
 
     print(f"File {source_file_name} uploaded to {destination_blob_name} in {bucket_name}.")
 
-bucket_name = "BUCKET_NAME"
 source_file_name = "voter_data.csv"
 destination_name = "voter_data.csv"
 

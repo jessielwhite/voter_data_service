@@ -2,42 +2,38 @@ from docx import Document
 import csv
 import pandas as pd
 import re
+from dotenv import load_dotenv
 import os
 from google.cloud import storage
 
+load_dotenv()
+
+project_id = storage.Client(os.get("PROJECT_ID"))
+bucket = storage.Client(os.get("BUCKET_NAME"))
+
 def authenticate_implicit_with_adc(project_id):
-    storage_client = storage.Client(project=project_id)
-    buckets = storage_client.list_buckets()
+    buckets = project_id.list_buckets()
     print("Buckets:")
     for bucket in buckets:
         print(bucket.name)
     print("Listed all storage buckets.")
 
-authenticate_implicit_with_adc(project_id="PROJECT_ID")
+authenticate_implicit_with_adc(project_id)
 
-def download_blob(bucket_name, source_voter_file_layout, destination_voter_file_layout):
+def download_blob(bucket, source_voter_file_layout, destination_voter_file_layout):
     """Downloads a blob from the bucket."""
-
-    storage_client = storage.Client("PROJECT_ID")
-
-    bucket = storage_client.bucket(bucket_name)
 
     blob = bucket.blob(source_voter_file_layout)
     voter_file = blob.download_to_filename(destination_voter_file_layout)
 
-    print("Downloaded storage object {} from bucket {} to local file {}.".format(source_voter_file_layout, bucket_name, voter_file))
+    print("Downloaded storage object {} from bucket {} to local file {}.".format(source_voter_file_layout, bucket, voter_file))
 
-bucket_name = "BUCKET_NAME"
-download_blob(bucket_name, source_voter_file_layout=f"{bucket_name}/data/Voter_File_Layout.docx", destination_voter_file_layout="Voter_File_Layout.docx")
+download_blob(bucket, source_voter_file_layout=f"{bucket}/data/Voter_File_Layout.docx", destination_voter_file_layout="Voter_File_Layout.docx")
 
 def voter_file_layout_docx_to_csv(docx_layout, csv_layout):
     """
     Extracts text from the docx file table, removes unnecessary characters, and writes each row as a row in a CSV file.
     """
-    if not os.path.isfile(docx_layout):
-        print(f"Error: DOCX file not found at '{docx_layout}'")
-        return None
-
     try:
         doc = Document(docx_layout)
     except Exception as e:
@@ -90,7 +86,7 @@ voter_data_txt_to_csv('voter_data.txt', 'voter_data.csv')
 def process_voter_data_csv(csv_filename):
     """
     Concatenates all values for cols beginning with "PRIMARY"/"GENERAL"/"SPECIAL" into a single val for new col VOTING_HISTORY.
-    For schema normalization testing purposes."
+    For schema normalization testing purposes.
     """
     data = pd.read_csv(csv_filename)
 

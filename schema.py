@@ -1,6 +1,14 @@
 from google.cloud import bigquery
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+project_id = os.get("PROJECT_ID")
+dataset_id = os.get("DATASET_ID")
 
 class Table(bigquery.Table):
+    """Allow for sos_voter_id to be set as primary and foreign key."""
     def __init__(self, *args, **kwargs):
        super(*args, **kwargs)
 
@@ -8,12 +16,12 @@ class Table(bigquery.Table):
         if 'tableConstraints' not in self._properties:
             self._properties['tableConstraints'] = {}
         self._properties['tableConstraints']['primaryKey'] = primary_key
-    def set_foreign(self, foreign_key):
+    def set_foreign_key(self, foreign_key):
         if 'tableConstraints' not in self._properties:
             self._properties['tableConstraints'] = {}
         self._properties['tableConstraints']['foreignKey'] = foreign_key
 
-def create_voter_registry_table(table_id):
+def create_voter_registry_table(dataset_id):
     """
     Establishes the schema for voter_registry table.
     """
@@ -67,7 +75,7 @@ def create_voter_registry_table(table_id):
     ]
 
     primary_key={"columns": ["sos_voter_id"]}
-    table = Table(table_id, schema=schema)
+    table = Table(dataset_id, schema=schema)
     table.set_primary_key(primary_key)
 
     table.time_partitioning = bigquery.TimePartitioning(
@@ -82,14 +90,12 @@ def create_voter_registry_table(table_id):
         "party_affiliation"
     ]
 
-    client = bigquery.Client('PROJECT_ID')
+    client = bigquery.Client(project_id)
     table = client.create_table(table)
 
-table_id = "TABLE_ID"
+create_voter_registry_table(dataset_id)
 
-create_voter_registry_table(table_id)
-
-def create_voting_history_table(table_id):
+def create_voting_history_table(dataset_id):
     """Establishes the schema for voting_history table."""
     schema = [
         bigquery.SchemaField(
@@ -109,7 +115,7 @@ def create_voting_history_table(table_id):
     ]
 
     foreign_key={"columns": ["sos_voter_id"]}
-    table = Table(table_id, schema=schema)
+    table = Table(dataset_id, schema=schema)
     table.set_foreign_key(foreign_key)
 
     table.time_partitioning = bigquery.TimePartitioning(
@@ -117,11 +123,10 @@ def create_voting_history_table(table_id):
         field="election_date"
     )
 
-    client = bigquery.Client('PROJECT_ID')
+    client = bigquery.Client(project_id)
     table = client.create_table(table)
 
-table_id = "TABLE_ID"
-create_voting_history_table(table_id)
+create_voting_history_table(dataset_id)
 
 def hash_columns_for_search(fields_to_hash):
     """

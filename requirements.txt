@@ -1,8 +1,8 @@
 sqlalchemy
 pdfplumber
 python-docx
-apache-airflow
 pandas
+python-dotenv
 google-cloud-orchestration-airflow
 google-cloud-bigquery
 google-cloud-storage
